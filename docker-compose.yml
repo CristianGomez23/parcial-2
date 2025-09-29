@@ -1,0 +1,63 @@
+services:
+  traefik:
+    image: traefik:v2.11
+    restart: always
+    command:
+      - "--api.dashboard=true"
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker=true"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - app_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`greninja.localhost`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/overview`) || PathPrefix(`/api/http`) || PathPrefix(`/api/rawdata`) || PathPrefix(`/api/version`) || PathPrefix(`/api/entrypoints`))"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  backend:
+    build: ./backend
+    restart: always
+    depends_on:
+      - neo4j
+    env_file:
+      - .env
+    networks:
+      - app_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`snorlax.localhost`) && PathPrefix(`/v1`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.api.middlewares=strip-prefix"
+      - "traefik.http.middlewares.strip-prefix.stripPrefix.prefixes=/v1"
+      - "traefik.http.middlewares.strip-prefix.stripPrefix.forceSlash=false"
+
+  neo4j:
+    image: neo4j:5.22.0-community
+    restart: always
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - app_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neo4j.rule=Host(`gardevoir.localhost`) && PathPrefix(`/db`)"
+      - "traefik.http.routers.neo4j.entrypoints=web"
+      - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
+      - "traefik.http.routers.neo4j.middlewares=neo4j-strip"
+      - "traefik.http.middlewares.neo4j-strip.stripPrefix.prefixes=/db"
+
+volumes:
+  neo4j_data:
+    driver: local
+
+networks:
+  app_network:
+    driver: bridge
+
