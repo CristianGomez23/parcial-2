@@ -37,3 +37,11 @@ Edwar Julian Cabra Coy , Código: 202312577
 ![Evidencia 3](Punto3/Imagen3.png)
 
 - Analogias: El acceso por medio de una autenticacion basica equivale al control de pasaporte en la puerta de embarque, donde solo los pasajeros con documento válido (usuario y contraseña) pueden acceder a la terminal, por otro lado el middleware rateLimit funciona como los torniquetes de seguridad que regulan el flujo de pasajeros, ya que aunque todos tengan acceso, solo un número limitado puede pasar en un intervalo de tiempo para evitar congestión, por ultimo, el pathPrefix es como señalizar que cierta puerta solo atiende vuelos con un destino específico, los pasajeros deben presentar su pase de abordar en la fila correcta para poder pasar, de lo contrario, se les niega el acceso.
+
+## Punto 4
+
+- Evidencias: En la primera imagen se muestra el mensaje de la sala de prensa, la segunda imagen muestra la conexion interna con la bd.
+
+![Evidencia 1](Punto4/Imagen1.png)
+
+![Evidencia 2](Punto4/Imagen2.png)
