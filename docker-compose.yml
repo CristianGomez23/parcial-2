@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   traefik:
     image: traefik:v2.11
@@ -36,6 +38,27 @@ services:
       - "traefik.http.middlewares.strip-prefix.stripPrefix.prefixes=/v1"
       - "traefik.http.middlewares.strip-prefix.stripPrefix.forceSlash=false"
 
+  backend_legend:
+    build: ./backend
+    restart: always
+    depends_on:
+      - neo4j
+    env_file:
+      - .env
+    networks:
+      - app_network
+    volumes:
+      - ./logs:/app/logs
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.legend.rule=Host(`snorlax.localhost`) && Path(`/v1/legendario`)"
+      - "traefik.http.routers.legend.entrypoints=web"
+      - "traefik.http.routers.legend.priority=100"
+      - "traefik.http.services.legend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.legend.middlewares=strip-prefix-legend"
+      - "traefik.http.middlewares.strip-prefix-legend.stripPrefix.prefixes=/v1"
+      - "traefik.http.middlewares.strip-prefix-legend.stripPrefix.forceSlash=false"
+
   neo4j:
     image: neo4j:5.22.0-community
     restart: always
@@ -45,13 +68,6 @@ services:
       - neo4j_data:/data
     networks:
       - app_network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.neo4j.rule=Host(`gardevoir.localhost`) && PathPrefix(`/db`)"
-      - "traefik.http.routers.neo4j.entrypoints=web"
-      - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
-      - "traefik.http.routers.neo4j.middlewares=neo4j-strip"
-      - "traefik.http.middlewares.neo4j-strip.stripPrefix.prefixes=/db"
 
 volumes:
   neo4j_data:
